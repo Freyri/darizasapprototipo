@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Orden de Fabricación</title>
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+<style>
+body {
+  font-family: Arial;
+  background: #e6e6e6;
+  margin: 0;
+}
+
+.container {
+  width: 95%;
+  margin: 20px auto;
+  background: #f5f5f5;
+  border: 1px solid #999;
+  padding: 10px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.info { width: 60%; }
+.info div { margin: 5px 0; }
+
+.panel {
+  width: 30%;
+  background: #ddd;
+  padding: 10px;
+  border: 1px solid #aaa;
+}
+
+select, button {
+  width: 100%;
+  padding: 6px;
+  margin-top: 5px;
+}
+
+button {
+  background: #22c55e;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  background: white;
+}
+
+th, td {
+  border: 1px solid #999;
+  padding: 5px;
+  text-align: center;
+}
+
+th { background: #ccc; }
+
+.ok { background: #a3ffb0 !important; }
+.error { background: #ffb0b0 !important; }
+
+/* mensaje flotante */
+#mensaje {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px;
+  color: white;
+  display: none;
+}
+
+/* 🔥 TIMER BONITO */
+#timer {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 10px;
+  color: #333;
+}
+#logoContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+#logoContainer img {
+  width: 180px;      /* 👈 tamaño escritorio */
+  max-width: 40%;   /* 👈 responsive */
+  height: auto;
+  object-fit: contain;
+  opacity: 0.9;     /* 👈 opcional elegante */
+}
+</style>
+</head>
+
+<body>
+
+<div id="mensaje"></div>
+
+<div class="container">
+
+<div class="header">
+
+<div class="info">
+  <div><b>Descripción producto:</b> <span id="producto">---</span></div>
+  <div><b>Cantidad planificada:</b> <span id="cantidad">---</span></div>
+</div>
+<div id="logoContainer">
+  <img src="logo.jpg" alt="Logo">
+</div>
+<div class="panel">
+  <label><b>Lote:</b></label>
+  <select id="loteSelect">
+    <option value="">Seleccionar</option>
+    <option value="L001">L001</option>
+    <option value="L002">L002</option>
+    <option value="L003">L003</option>
+    <option value="L004">L004</option>
+    <option value="L005">L005</option>
+  </select>
+
+  <label><b>Tipo:</b></label>
+  <select id="tipoSelect" disabled>
+    <option value="">Seleccionar</option>
+    <option value="BASE">BASE</option>
+    <option value="COMPLEMENTO">COMPLEMENTO</option>
+  </select>
+
+  <button id="btnEnviar">📤 Cargar Datos</button>
+  <button id="btnValidar">✅ Validar Artículo</button>
+
+  <div id="timer"></div>
+</div>
+
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>Kardex</th>
+  <th>Descripción</th>
+  <th>Cantidad</th>
+  <th>Unidad</th>
+  <th>✔</th>
+</tr>
+</thead>
+<tbody id="tablaComponentes"></tbody>
+</table>
+
+</div>
+
+<script>
+
+const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+
+const topicRequest = "dariza/lote/request";
+const topicResponse = "dariza/lote/response";
+const topicBarcode = "dariza/barcode/response";
+const topicPeso = "dariza/peso/web";
+
+let articuloActual = null;
+let pesoKG = 0;
+let pesoG = 0;
+
+// ================= MQTT =================
+client.on("connect", () => {
+  client.subscribe(topicResponse);
+  client.subscribe(topicBarcode);
+  client.subscribe(topicPeso);
+});
+
+// ================= UI =================
+function mostrarMensaje(texto, color="red") {
+  const msg = document.getElementById("mensaje");
+  msg.innerText = texto;
+  msg.style.background = color;
+  msg.style.display = "block";
+  setTimeout(() => msg.style.display = "none", 2000);
+}
+
+// ================= SELECT =================
+loteSelect.onchange = () => {
+  tipoSelect.disabled = (loteSelect.value === "");
+};
+
+// ================= CARGAR =================
+btnEnviar.onclick = () => {
+  const lote = loteSelect.value;
+  const tipo = tipoSelect.value;
+
+  if (!lote || !tipo) {
+    alert("Selecciona lote y tipo");
+    return;
+  }
+
+  client.publish(topicRequest, JSON.stringify({ lote, tipo }));
+};
+
+// ================= MENSAJES =================
+client.on("message", (topic, message) => {
+
+  const data = JSON.parse(message.toString());
+
+  // ===== LOTE =====
+  if (topic === topicResponse) {
+
+    producto.innerText = data.lote.producto;
+    cantidad.innerText = data.lote.cantidad_planificada + " kg";
+
+    tablaComponentes.innerHTML = "";
+
+    data.componentes.forEach((c, i) => {
+      tablaComponentes.innerHTML += `
+        <tr data-kardex="${c.kardex}">
+          <td>${i+1}</td>
+          <td>${c.kardex}</td>
+          <td>${c.descripcion}</td>
+          <td>${c.cantidad_requerida}</td>
+          <td>${c.unidad}</td>
+          <td>❌</td>
+        </tr>`;
+    });
+  }
+
+  // ===== BARCODE =====
+  if (topic === topicBarcode) {
+
+    if (data.kardex === "0") return;
+
+    const filas = document.querySelectorAll("#tablaComponentes tr");
+
+    filas.forEach(f => f.classList.remove("ok", "error"));
+
+    let encontrado = false;
+
+    filas.forEach(fila => {
+      if (fila.dataset.kardex === data.kardex) {
+        encontrado = true;
+
+        if (data.status === "ok") {
+          fila.classList.add("ok");
+          articuloActual = data.kardex;
+        } else {
+          fila.classList.add("error");
+        }
+      }
+    });
+
+    if (!encontrado) {
+      mostrarMensaje("❌ Artículo no encontrado");
+    }
+  }
+
+  // ===== PESO =====
+  if (topic === topicPeso) {
+    pesoKG = data.kg;
+    pesoG = data.g;
+  }
+
+});
+
+// ================= VALIDAR =================
+btnValidar.onclick = () => {
+
+  if (!articuloActual) {
+    mostrarMensaje("⚠️ Escanea primero", "orange");
+    return;
+  }
+
+  let t = 3;
+
+  timer.innerText = `⏳ Validando en ${t}...`;
+
+  const intervalo = setInterval(() => {
+    t--;
+    timer.innerText = `⏳ Validando en ${t}...`;
+
+    if (t <= 0) {
+      clearInterval(intervalo);
+      timer.innerText = "";
+      validarPeso();
+    }
+
+  }, 1000);
+};
+
+// ================= VALIDACIÓN =================
+function validarPeso() {
+
+  const fila = document.querySelector(`tr[data-kardex="${articuloActual}"]`);
+  if (!fila) return;
+
+  const cantidad = parseFloat(fila.children[3].innerText);
+  const unidad = fila.children[4].innerText;
+
+  let peso = (unidad === "kg") ? pesoKG : pesoG;
+
+  const tolerancia = 1;
+
+  if (Math.abs(peso - cantidad) <= tolerancia) {
+
+    fila.classList.remove("ok");
+    fila.children[5].innerText = "✅";
+
+    mostrarMensaje("✔ Validado", "green");
+
+    articuloActual = null; // 🔥 reset
+
+  } else {
+    mostrarMensaje(`❌ Peso incorrecto (${peso})`);
+  }
+}
+
+</script>
+
+</body>
+</html>
