@@ -105,8 +105,8 @@ th { background: #ccc; }
 }
 
 #logoContainer img {
-  width: 25vw;       /* 🔥 responsive */
-  max-width: 100%;   /* 🔥 nunca se pasa */
+  width: 25vw;
+  max-width: 100%;
   height: auto;
   object-fit: contain;
   opacity: 0.9;
@@ -140,13 +140,6 @@ th { background: #ccc; }
     <option value="L003">L003</option>
     <option value="L004">L004</option>
     <option value="L005">L005</option>
-  </select>
-
-  <label><b>Tipo:</b></label>
-  <select id="tipoSelect" disabled>
-    <option value="">Seleccionar</option>
-    <option value="BASE">BASE</option>
-    <option value="COMPLEMENTO">COMPLEMENTO</option>
   </select>
 
   <button id="btnEnviar">📤 Cargar Datos</button>
@@ -200,20 +193,15 @@ function mostrarMensaje(texto, color="red") {
   setTimeout(() => msg.style.display = "none", 2000);
 }
 
-loteSelect.onchange = () => {
-  tipoSelect.disabled = (loteSelect.value === "");
-};
-
 btnEnviar.onclick = () => {
   const lote = loteSelect.value;
-  const tipo = tipoSelect.value;
 
-  if (!lote || !tipo) {
-    alert("Selecciona lote y tipo");
+  if (!lote) {
+    alert("Selecciona lote");
     return;
   }
 
-  client.publish(topicRequest, JSON.stringify({ lote, tipo }));
+  client.publish(topicRequest, JSON.stringify({ lote }));
 };
 
 client.on("message", (topic, message) => {
