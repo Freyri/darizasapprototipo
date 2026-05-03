@@ -21,7 +21,7 @@ body {
   padding: 10px;
 }
 
-/* 🔥 HEADER ARREGLADO */
+/* HEADER */
 .header {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -56,7 +56,6 @@ button {
   font-weight: bold;
 }
 
-/* separación extra entre botones */
 #btnValidar {
   margin-top: 20px;
 }
@@ -79,7 +78,7 @@ th { background: #ccc; }
 .ok { background: #a3ffb0 !important; }
 .error { background: #ffb0b0 !important; }
 
-/* mensaje flotante */
+/* mensaje */
 #mensaje {
   position: fixed;
   top: 20px;
@@ -89,7 +88,7 @@ th { background: #ccc; }
   display: none;
 }
 
-/* 🔥 TIMER */
+/* timer */
 #timer {
   text-align: center;
   font-size: 18px;
@@ -98,7 +97,7 @@ th { background: #ccc; }
   color: #333;
 }
 
-/* 🔥 LOGO CENTRADO REAL */
+/* LOGO */
 #logoContainer {
   display: flex;
   justify-content: center;
@@ -106,8 +105,8 @@ th { background: #ccc; }
 }
 
 #logoContainer img {
-  width: 400px;   /* más grande */
-  max-width: 100%;
+  width: 30vw;       /* 🔥 responsive */
+  max-width: 100%;   /* 🔥 nunca se pasa */
   height: auto;
   object-fit: contain;
   opacity: 0.9;
@@ -187,14 +186,12 @@ let articuloActual = null;
 let pesoKG = 0;
 let pesoG = 0;
 
-// ================= MQTT =================
 client.on("connect", () => {
   client.subscribe(topicResponse);
   client.subscribe(topicBarcode);
   client.subscribe(topicPeso);
 });
 
-// ================= UI =================
 function mostrarMensaje(texto, color="red") {
   const msg = document.getElementById("mensaje");
   msg.innerText = texto;
@@ -203,12 +200,10 @@ function mostrarMensaje(texto, color="red") {
   setTimeout(() => msg.style.display = "none", 2000);
 }
 
-// ================= SELECT =================
 loteSelect.onchange = () => {
   tipoSelect.disabled = (loteSelect.value === "");
 };
 
-// ================= CARGAR =================
 btnEnviar.onclick = () => {
   const lote = loteSelect.value;
   const tipo = tipoSelect.value;
@@ -221,12 +216,10 @@ btnEnviar.onclick = () => {
   client.publish(topicRequest, JSON.stringify({ lote, tipo }));
 };
 
-// ================= MENSAJES =================
 client.on("message", (topic, message) => {
 
   const data = JSON.parse(message.toString());
 
-  // ===== LOTE =====
   if (topic === topicResponse) {
 
     producto.innerText = data.lote.producto;
@@ -247,7 +240,6 @@ client.on("message", (topic, message) => {
     });
   }
 
-  // ===== BARCODE =====
   if (topic === topicBarcode) {
 
     if (data.kardex === "0") return;
@@ -276,7 +268,6 @@ client.on("message", (topic, message) => {
     }
   }
 
-  // ===== PESO =====
   if (topic === topicPeso) {
     pesoKG = data.kg;
     pesoG = data.g;
@@ -284,7 +275,6 @@ client.on("message", (topic, message) => {
 
 });
 
-// ================= VALIDAR =================
 btnValidar.onclick = () => {
 
   if (!articuloActual) {
@@ -309,7 +299,6 @@ btnValidar.onclick = () => {
   }, 1000);
 };
 
-// ================= VALIDACIÓN =================
 function validarPeso() {
 
   const fila = document.querySelector(`tr[data-kardex="${articuloActual}"]`);
