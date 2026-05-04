@@ -68,7 +68,9 @@ button {
 #btnValidar {
   margin-top: 20px;
 }
-
+#btnReporte {
+  margin-top: 20px;
+}
 button:disabled {
   background: #999;
   cursor: not-allowed;
@@ -203,7 +205,7 @@ function formatearFecha(fechaISO) {
     String(d.getSeconds()).padStart(2,'0');
 }
 
-// 🔥 DIVIDIR TEXTO EN 2 LÍNEAS
+// 🔥 DIVIDIR TEXTO
 function dividirTexto(texto, ancho) {
   texto = texto || "";
   return [
@@ -392,7 +394,7 @@ function validarPeso() {
   }
 }
 
-// 🔥 REPORTE MEJORADO
+// 🔥 REPORTE
 document.getElementById("btnReporte").onclick = () => {
 
   const lote = document.getElementById("loteInput").value.trim().toUpperCase();
@@ -410,7 +412,7 @@ document.getElementById("btnReporte").onclick = () => {
 
   const pad = (txt, n) => String(txt).padEnd(n, " ");
 
-  const W = { num:4, kardex:12, desc:25, cant:15, estado:10, fecha:12 };
+  const W = { num:4, kardex:12, desc:25, cant:15, estado:10, fecha:16 };
 
   let contenido = `
 DARYZA S.A.
@@ -424,7 +426,8 @@ Fecha y Hora: ${new Date().toLocaleString()}
 
 ----------------------------------------
 
-${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Cantidad",W.cant)}${pad("Estado",W.estado)}${pad("Fecha",W.fecha)}
+${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Cantidad",W.cant)}${pad("Estado",W.estado)}${pad("Fecha y Hora",W.fecha)}
+
 `;
 
   let completo = true;
@@ -447,7 +450,6 @@ ${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Ca
 
     const [desc1, desc2] = dividirTexto(f.children[2].innerText, W.desc);
 
-    // línea 1
     contenido +=
       pad(i+1, W.num) +
       pad(f.children[1].innerText, W.kardex) +
@@ -457,16 +459,14 @@ ${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Ca
       pad(fecha1, W.fecha) +
       "\n";
 
-    // línea 2
     contenido +=
       pad("", W.num) +
       pad("", W.kardex) +
       pad(desc2, W.desc) +
       pad("", W.cant) +
       pad("", W.estado) +
-      pad(fecha2, W.fecha) +
+      (fecha2 ? fecha2.padEnd(W.fecha, " ") : "".padEnd(W.fecha, " ")) +
       "\n";
-
   });
 
   contenido += `\n----------------------------------------\n`;
@@ -480,8 +480,8 @@ ${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Ca
   temp.style.padding = "40px";
   temp.style.fontSize = "14px";
   temp.style.fontFamily = "Courier New, monospace";
-  temp.style.whiteSpace = "pre-wrap";
-  temp.style.lineHeight = "1.6";
+  temp.style.whiteSpace = "pre";
+  temp.style.lineHeight = "1.8";
 
   temp.innerText = contenido;
 
