@@ -477,7 +477,7 @@ ${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Ca
 
   const temp = document.createElement("div");
 
-  temp.style.padding = "40px";
+  temp.style.padding = "30px"; // 🔥 antes 40px
   temp.style.fontSize = "14px";
   temp.style.fontFamily = "Courier New, monospace";
   temp.style.whiteSpace = "pre";
@@ -486,7 +486,7 @@ ${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Ca
   temp.innerText = contenido;
 
   html2pdf().set({
-    margin: 0.5,
+    margin: 0.3, // 🔥 antes 0.5
     filename: `reporte_${lote}.pdf`,
     html2canvas: { scale: 2 },
     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
