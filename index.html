@@ -7,6 +7,12 @@
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
 <style>
+
+/* 🔥 FIX GLOBAL */
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: Arial;
   background: #e6e6e6;
@@ -43,7 +49,7 @@ body {
   justify-self: end;
 }
 
-select, button {
+input, button {
   width: 100%;
   padding: 6px;
   margin-top: 8px;
@@ -58,6 +64,11 @@ button {
 
 #btnValidar {
   margin-top: 20px;
+}
+
+button:disabled {
+  background: #999;
+  cursor: not-allowed;
 }
 
 table {
@@ -133,14 +144,7 @@ th { background: #ccc; }
 
 <div class="panel">
   <label><b>Lote:</b></label>
-  <select id="loteSelect">
-    <option value="">Seleccionar</option>
-    <option value="L001">L001</option>
-    <option value="L002">L002</option>
-    <option value="L003">L003</option>
-    <option value="L004">L004</option>
-    <option value="L005">L005</option>
-  </select>
+  <input type="text" id="loteInput" placeholder="Ej: L001">
 
   <button id="btnEnviar">📤 Cargar Datos</button>
   <button id="btnValidar">✅ Validar Peso</button>
@@ -174,6 +178,7 @@ const topicRequest = "dariza/lote/request";
 const topicResponse = "dariza/lote/response";
 const topicBarcode = "dariza/barcode/response";
 const topicPeso = "dariza/peso/web";
+const topicValidar = "dariza/validacion/request"; // 🔥 NUEVO
 
 let articuloActual = null;
 let pesoKG = 0;
@@ -194,10 +199,10 @@ function mostrarMensaje(texto, color="red") {
 }
 
 btnEnviar.onclick = () => {
-  const lote = loteSelect.value;
+  const lote = document.getElementById("loteInput").value.trim().toUpperCase();
 
   if (!lote) {
-    alert("Selecciona lote");
+    alert("Ingresa lote");
     return;
   }
 
@@ -210,22 +215,38 @@ client.on("message", (topic, message) => {
 
   if (topic === topicResponse) {
 
+    if (data.status === "error") {
+      mostrarMensaje("❌ " + data.mensaje);
+
+      producto.innerText = "---";
+      cantidad.innerText = "---";
+      tablaComponentes.innerHTML = "";
+
+      return;
+    }
+
     producto.innerText = data.lote.producto;
     cantidad.innerText = data.lote.cantidad_planificada + " kg";
 
     tablaComponentes.innerHTML = "";
 
     data.componentes.forEach((c, i) => {
+
+      const yaValidado = c.validado == 1;
+
       tablaComponentes.innerHTML += `
-        <tr data-kardex="${c.kardex}">
+        <tr data-kardex="${c.kardex}" data-validado="${c.validado}">
           <td>${i+1}</td>
           <td>${c.kardex}</td>
           <td>${c.descripcion}</td>
           <td>${c.cantidad_requerida}</td>
           <td>${c.unidad}</td>
-          <td>❌</td>
+          <td>${yaValidado ? "✅" : "❌"}</td>
         </tr>`;
     });
+
+    // 🔥 desactivar botón al cargar
+    btnValidar.disabled = true;
   }
 
   if (topic === topicBarcode) {
@@ -242,11 +263,19 @@ client.on("message", (topic, message) => {
       if (fila.dataset.kardex === data.kardex) {
         encontrado = true;
 
+        if (fila.dataset.validado == "1") {
+          mostrarMensaje("⚠️ Ya validado", "orange");
+          btnValidar.disabled = true;
+          return;
+        }
+
         if (data.status === "ok") {
           fila.classList.add("ok");
           articuloActual = data.kardex;
+          btnValidar.disabled = false; // 🔥 habilita
         } else {
           fila.classList.add("error");
+          btnValidar.disabled = true;
         }
       }
     });
@@ -303,10 +332,20 @@ function validarPeso() {
 
     fila.classList.remove("ok");
     fila.children[5].innerText = "✅";
+    fila.dataset.validado = "1";
+
+    // 🔥 GUARDAR EN DB
+    const lote = document.getElementById("loteInput").value.trim().toUpperCase();
+
+    client.publish(topicValidar, JSON.stringify({
+      lote: lote,
+      kardex: articuloActual
+    }));
 
     mostrarMensaje("✔ Validado", "green");
 
     articuloActual = null;
+    btnValidar.disabled = true;
 
   } else {
     mostrarMensaje(`❌ Peso incorrecto (${peso})`);
