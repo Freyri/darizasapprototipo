@@ -6,6 +6,9 @@
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
+<!-- 🔥 LIBRERÍA PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <style>
 
 /* 🔥 FIX GLOBAL */
@@ -122,6 +125,7 @@ th { background: #ccc; }
   object-fit: contain;
   opacity: 0.9;
 }
+
 </style>
 </head>
 
@@ -129,7 +133,7 @@ th { background: #ccc; }
 
 <div id="mensaje"></div>
 
-<div class="container">
+<div class="container" id="reporte">
 
 <div class="header">
 
@@ -148,6 +152,7 @@ th { background: #ccc; }
 
   <button id="btnEnviar">📤 Cargar Datos</button>
   <button id="btnValidar">✅ Validar Peso</button>
+  <button id="btnReporte">📄 Descargar Reporte</button>
 
   <div id="timer"></div>
 </div>
@@ -178,11 +183,34 @@ const topicRequest = "dariza/lote/request";
 const topicResponse = "dariza/lote/response";
 const topicBarcode = "dariza/barcode/response";
 const topicPeso = "dariza/peso/web";
-const topicValidar = "dariza/validacion/request"; // 🔥 NUEVO
+const topicValidar = "dariza/validacion/request";
 
 let articuloActual = null;
 let pesoKG = 0;
 let pesoG = 0;
+
+// 🔥 FORMATEAR FECHA
+function formatearFecha(fechaISO) {
+  if (!fechaISO) return "---";
+
+  const d = new Date(fechaISO);
+
+  return d.getFullYear() + "-" +
+    String(d.getMonth()+1).padStart(2,'0') + "-" +
+    String(d.getDate()).padStart(2,'0') + " " +
+    String(d.getHours()).padStart(2,'0') + ":" +
+    String(d.getMinutes()).padStart(2,'0') + ":" +
+    String(d.getSeconds()).padStart(2,'0');
+}
+
+// 🔥 DIVIDIR TEXTO EN 2 LÍNEAS
+function dividirTexto(texto, ancho) {
+  texto = texto || "";
+  return [
+    texto.substring(0, ancho),
+    texto.length > ancho ? texto.substring(ancho, ancho * 2) : ""
+  ];
+}
 
 client.on("connect", () => {
   client.subscribe(topicResponse);
@@ -202,7 +230,7 @@ btnEnviar.onclick = () => {
   const lote = document.getElementById("loteInput").value.trim().toUpperCase();
 
   if (!lote) {
-    alert("Ingresa lote");
+    mostrarMensaje("⚠️ Ingresa un lote", "orange");
     return;
   }
 
@@ -235,7 +263,9 @@ client.on("message", (topic, message) => {
       const yaValidado = c.validado == 1;
 
       tablaComponentes.innerHTML += `
-        <tr data-kardex="${c.kardex}" data-validado="${c.validado}">
+        <tr data-kardex="${c.kardex}" 
+            data-validado="${c.validado}" 
+            data-fecha="${c.fecha_validacion ? formatearFecha(c.fecha_validacion) : ''}">
           <td>${i+1}</td>
           <td>${c.kardex}</td>
           <td>${c.descripcion}</td>
@@ -245,7 +275,6 @@ client.on("message", (topic, message) => {
         </tr>`;
     });
 
-    // 🔥 desactivar botón al cargar
     btnValidar.disabled = true;
   }
 
@@ -272,7 +301,7 @@ client.on("message", (topic, message) => {
         if (data.status === "ok") {
           fila.classList.add("ok");
           articuloActual = data.kardex;
-          btnValidar.disabled = false; // 🔥 habilita
+          btnValidar.disabled = false;
         } else {
           fila.classList.add("error");
           btnValidar.disabled = true;
@@ -334,12 +363,23 @@ function validarPeso() {
     fila.children[5].innerText = "✅";
     fila.dataset.validado = "1";
 
-    // 🔥 GUARDAR EN DB
+    const now = new Date();
+    const fecha =
+      now.getFullYear() + "-" +
+      String(now.getMonth()+1).padStart(2,'0') + "-" +
+      String(now.getDate()).padStart(2,'0') + " " +
+      String(now.getHours()).padStart(2,'0') + ":" +
+      String(now.getMinutes()).padStart(2,'0') + ":" +
+      String(now.getSeconds()).padStart(2,'0');
+
+    fila.dataset.fecha = fecha;
+
     const lote = document.getElementById("loteInput").value.trim().toUpperCase();
 
     client.publish(topicValidar, JSON.stringify({
       lote: lote,
-      kardex: articuloActual
+      kardex: articuloActual,
+      fecha_validacion: fecha
     }));
 
     mostrarMensaje("✔ Validado", "green");
@@ -352,7 +392,107 @@ function validarPeso() {
   }
 }
 
-</script>
+// 🔥 REPORTE MEJORADO
+document.getElementById("btnReporte").onclick = () => {
 
+  const lote = document.getElementById("loteInput").value.trim().toUpperCase();
+  const filas = document.querySelectorAll("#tablaComponentes tr");
+
+  if (!lote) {
+    mostrarMensaje("⚠️ Lote no seleccionado", "orange");
+    return;
+  }
+
+  if (filas.length === 0) {
+    mostrarMensaje("⚠️ No hay datos para exportar", "orange");
+    return;
+  }
+
+  const pad = (txt, n) => String(txt).padEnd(n, " ");
+
+  const W = { num:4, kardex:12, desc:25, cant:15, estado:10, fecha:12 };
+
+  let contenido = `
+DARYZA S.A.
+ORDEN DE FABRICACIÓN
+----------------------------------------
+
+Lote: ${lote}
+Producto: ${producto.innerText}
+Cantidad: ${cantidad.innerText}
+Fecha y Hora: ${new Date().toLocaleString()}
+
+----------------------------------------
+
+${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Cantidad",W.cant)}${pad("Estado",W.estado)}${pad("Fecha",W.fecha)}
+`;
+
+  let completo = true;
+
+  filas.forEach((f, i) => {
+
+    const estado = f.children[5].innerText;
+    if (estado === "❌") completo = false;
+
+    const fecha = f.dataset.fecha ? formatearFecha(f.dataset.fecha) : "---";
+
+    let fecha1 = "---";
+    let fecha2 = "";
+
+    if (fecha !== "---") {
+      const partes = fecha.split(" ");
+      fecha1 = partes[0];
+      fecha2 = partes[1] || "";
+    }
+
+    const [desc1, desc2] = dividirTexto(f.children[2].innerText, W.desc);
+
+    // línea 1
+    contenido +=
+      pad(i+1, W.num) +
+      pad(f.children[1].innerText, W.kardex) +
+      pad(desc1, W.desc) +
+      pad(f.children[3].innerText + " " + f.children[4].innerText, W.cant) +
+      pad(estado, W.estado) +
+      pad(fecha1, W.fecha) +
+      "\n";
+
+    // línea 2
+    contenido +=
+      pad("", W.num) +
+      pad("", W.kardex) +
+      pad(desc2, W.desc) +
+      pad("", W.cant) +
+      pad("", W.estado) +
+      pad(fecha2, W.fecha) +
+      "\n";
+
+  });
+
+  contenido += `\n----------------------------------------\n`;
+  contenido += `Estado del lote: ${completo ? "✔ COMPLETO" : "❌ INCOMPLETO"}\n\n\n`;
+
+  contenido += `Operario: ____________________________\n\n`;
+  contenido += `Firma:    ____________________________\n`;
+
+  const temp = document.createElement("div");
+
+  temp.style.padding = "40px";
+  temp.style.fontSize = "14px";
+  temp.style.fontFamily = "Courier New, monospace";
+  temp.style.whiteSpace = "pre-wrap";
+  temp.style.lineHeight = "1.6";
+
+  temp.innerText = contenido;
+
+  html2pdf().set({
+    margin: 0.5,
+    filename: `reporte_${lote}.pdf`,
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  }).from(temp).save();
+};
+
+</script>
 </body>
 </html>
