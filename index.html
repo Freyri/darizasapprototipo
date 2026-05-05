@@ -352,6 +352,7 @@ btnValidar.onclick = () => {
   }, 1000);
 };
 
+// 🔥🔥🔥 SOLO AQUÍ SE CORRIGIÓ 🔥🔥🔥
 function validarPeso() {
 
   const fila = document.querySelector(`tr[data-kardex="${articuloActual}"]`);
@@ -362,9 +363,17 @@ function validarPeso() {
 
   let peso = (unidad === "kg") ? pesoKG : pesoG;
 
-  const tolerancia = 1;
+  // 🔧 NORMALIZAR
+  peso = Number(peso);
+  const cantidadNorm = Number(cantidad);
 
-  if (Math.abs(peso - cantidad) <= tolerancia) {
+  let tolerancia = (unidad === "kg") ? 0.1 : 1;
+
+  // 🔥 EPSILON PARA BORDE EXACTO
+  const EPS = 0.00001;
+  const diferencia = Math.abs(peso - cantidadNorm);
+
+  if (diferencia <= tolerancia + EPS) {
 
     fila.classList.remove("ok");
     fila.children[5].innerText = "✅";
@@ -389,6 +398,17 @@ function validarPeso() {
       fecha_validacion: fecha
     }));
 
+    client.publish("dariza/print", JSON.stringify({
+      lote: lote,
+      producto: producto.innerText,
+      cantidad_planificada: cantidad.innerText,
+      kardex: articuloActual,
+      articulo: fila.children[2].innerText,
+      cantidad: fila.children[3].innerText + " " + fila.children[4].innerText,
+      peso: peso + " " + fila.children[4].innerText,
+      fecha: fecha
+    }));
+
     mostrarMensaje("✔ Validado", "green");
 
     articuloActual = null;
@@ -398,7 +418,6 @@ function validarPeso() {
     mostrarMensaje(`❌ Peso incorrecto (${peso})`);
   }
 }
-
 // 🔥 REPORTE
 document.getElementById("btnReporte").onclick = () => {
 
@@ -426,7 +445,7 @@ ORDEN DE FABRICACIÓN
 
 Lote: ${lote}
 Producto: ${producto.innerText}
-Cantidad: ${cantidad.innerText}
+Cantidad Planificada: ${cantidad.innerText}
 Fecha y Hora: ${new Date().toLocaleString()}
 
 ----------------------------------------
