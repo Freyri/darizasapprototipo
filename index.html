@@ -511,7 +511,28 @@ ${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Ca
     filename: `reporte_${lote}.pdf`,
     html2canvas: { scale: 2 },
     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-  }).from(temp).outputPdf('bloburl').then(url => window.open(url));
+  }).from(temp).outputPdf('blob').then(blob => {
+  const url = URL.createObjectURL(blob);
+
+  // Intentar abrir
+  window.open(url);
+
+  // Y forzar descarga también
+  const a = document.createElement("a");
+  a.href = url;
+  const now = new Date();
+
+  const fechaNombre =
+    now.getFullYear() + "-" +
+    String(now.getMonth()+1).padStart(2,'0') + "-" +
+    String(now.getDate()).padStart(2,'0') + "_" +
+    String(now.getHours()).padStart(2,'0') + "-" +
+    String(now.getMinutes()).padStart(2,'0') + "-" +
+    String(now.getSeconds()).padStart(2,'0');
+
+  a.download = `Reporte_${lote}_${fechaNombre}.pdf`;
+  a.click();
+  });
 };
 
 </script>
