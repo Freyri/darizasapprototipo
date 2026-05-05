@@ -511,7 +511,7 @@ ${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Ca
     filename: `reporte_${lote}.pdf`,
     html2canvas: { scale: 2 },
     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-  }).from(temp).save();
+  }).from(temp).outputPdf('bloburl').then(url => window.open(url));
 };
 
 </script>
