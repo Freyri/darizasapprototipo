@@ -352,7 +352,6 @@ btnValidar.onclick = () => {
   }, 1000);
 };
 
-// 🔥🔥🔥 SOLO AQUÍ SE CORRIGIÓ 🔥🔥🔥
 function validarPeso() {
 
   const fila = document.querySelector(`tr[data-kardex="${articuloActual}"]`);
@@ -363,17 +362,15 @@ function validarPeso() {
 
   let peso = (unidad === "kg") ? pesoKG : pesoG;
 
-  // 🔧 NORMALIZAR
-  peso = Number(peso);
-  const cantidadNorm = Number(cantidad);
+  let tolerancia = 1;
 
-  let tolerancia = (unidad === "kg") ? 0.1 : 1;
+  if (unidad === "kg") {
+    tolerancia = 0.11;
+  } else if (unidad === "g") {
+    tolerancia = 1;
+  }
 
-  // 🔥 EPSILON PARA BORDE EXACTO
-  const EPS = 0.00001;
-  const diferencia = Math.abs(peso - cantidadNorm);
-
-  if (diferencia <= tolerancia + EPS) {
+  if (Math.abs(peso - cantidad) <= tolerancia) {
 
     fila.classList.remove("ok");
     fila.children[5].innerText = "✅";
@@ -397,7 +394,7 @@ function validarPeso() {
       kardex: articuloActual,
       fecha_validacion: fecha
     }));
-
+    // 🔥 ENVÍO A IMPRESORA (SOLO SI VALIDÓ OK)
     client.publish("dariza/print", JSON.stringify({
       lote: lote,
       producto: producto.innerText,
@@ -408,7 +405,6 @@ function validarPeso() {
       peso: peso + " " + fila.children[4].innerText,
       fecha: fecha
     }));
-
     mostrarMensaje("✔ Validado", "green");
 
     articuloActual = null;
@@ -418,6 +414,7 @@ function validarPeso() {
     mostrarMensaje(`❌ Peso incorrecto (${peso})`);
   }
 }
+
 // 🔥 REPORTE
 document.getElementById("btnReporte").onclick = () => {
 
