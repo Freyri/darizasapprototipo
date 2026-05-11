@@ -5,132 +5,194 @@
 <title>Orden de Fabricación</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ffffff">
-
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-
 <!-- 🔥 LIBRERÍA PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
 <style>
-
 /* 🔥 FIX GLOBAL */
-* {
-  box-sizing: border-box;
+*{
+  box-sizing:border-box;
+}
+/* 🔥 ELIMINA SCROLL HORIZONTAL */
+html,
+body{
+  margin:0;
+  padding:0;
+  overflow-x:hidden;
+  width:100%;
+}
+body{
+  font-family:Arial;
+  background:#e6e6e6;
+}
+/* 🔥 CONTENEDOR */
+.container{
+  width:calc(100% - 40px);
+  margin:20px;
+  background:white;
+  border:1px solid #999;
+  padding:10px;
+  overflow-x:hidden;
+}
+/* 🔥 HEADER */
+.header{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:20px;
+}
+/* 🔥 INFO */
+.info{
+  width:100%;
+  justify-self:start;
+}
+.info div{
+  margin:5px 0;
+}
+/* 🔥 PANEL */
+.panel{
+  width:100%;
+  max-width:300px;
+  background:#ddd;
+  padding:10px;
+  border:1px solid #aaa;
+  justify-self:end;
+}
+/* 🔥 INPUTS */
+input,
+button{
+  width:100%;
+  padding:6px;
+  margin-top:8px;
+}
+button{
+  background:#22c55e;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+}
+#btnReporte{
+  margin-top:20px;
+}
+button:disabled{
+  background:#999;
+  cursor:not-allowed;
+}
+/* 🔥 TABLA */
+table{
+  width:100%;
+  margin-top:20px;
+  border-collapse:collapse;
+  background:white;
+  table-layout:fixed;
+}
+th,
+td{
+  border:1px solid #999;
+  padding:5px;
+  text-align:center;
+  word-wrap:break-word;
 }
 
-body {
-  font-family: Arial;
-  background: #e6e6e6;
-  margin: 0;
+th{
+  background:#ccc;
 }
 
-.container {
-  width: 95%;
-  margin: 20px auto;
-  background: white;
-  border: 1px solid #999;
-  padding: 10px;
+/* 🔥 ESTADOS */
+.ok{
+  background:#a3ffb0 !important;
 }
 
-/* HEADER */
-.header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
+.error{
+  background:#ffb0b0 !important;
 }
 
-.info {
-  width: 100%;
-  justify-self: start;
-}
-.info div { margin: 5px 0; }
-
-.panel {
-  width: 100%;
-  max-width: 300px;
-  background: #ddd;
-  padding: 10px;
-  border: 1px solid #aaa;
-  justify-self: end;
+.selected{
+  background:#fff3a3 !important;
 }
 
-input, button {
-  width: 100%;
-  padding: 6px;
-  margin-top: 8px;
+/* 🔥 MENSAJES */
+#mensaje{
+  position:fixed;
+  top:20px;
+  right:20px;
+  padding:10px;
+  color:white;
+  display:none;
+  z-index:999;
 }
 
-button {
-  background: #22c55e;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
+/* 🔥 TIMER */
+#timer{
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+  margin-top:10px;
+  color:#333;
 }
 
-#btnValidar {
-  margin-top: 20px;
-}
-#btnReporte {
-  margin-top: 20px;
-}
-button:disabled {
-  background: #999;
-  cursor: not-allowed;
+/* 🔥 LOGO */
+#logoContainer{
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
-table {
-  width: 100%;
-  margin-top: 20px;
-  border-collapse: collapse;
-  background: white;
+#logoContainer img{
+  width:280px;
+  max-width:100%;
+  height:auto;
+  object-fit:contain;
+  opacity:0.9;
 }
 
-th, td {
-  border: 1px solid #999;
-  padding: 5px;
-  text-align: center;
+/* 🔥 BOTONES VALIDAR */
+.btnFila{
+  width:40px;
+  height:40px;
+  border-radius:6px;
+  border:none;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-th { background: #ccc; }
-
-.ok { background: #a3ffb0 !important; }
-.error { background: #ffb0b0 !important; }
-
-/* mensaje */
-#mensaje {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 10px;
-  color: white;
-  display: none;
+.btnPendiente{
+  background:#ef4444;
+  color:white;
 }
 
-/* timer */
-#timer {
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  margin-top: 10px;
-  color: #333;
+.btnOk{
+  background:#22c55e;
+  color:white;
+  cursor:not-allowed;
 }
 
-/* LOGO */
-#logoContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* 🔥 INPUT OCULTO SCANNER */
+#scannerInput{
+  position:fixed;
+  left:-9999px;
+  top:-9999px;
+  opacity:0;
 }
 
-#logoContainer img {
-  width: 25vw;
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-  opacity: 0.9;
+/* 🔥 RESPONSIVE */
+@media screen and (max-width:1000px){
+
+  .header{
+    grid-template-columns:1fr;
+  }
+
+  .panel{
+    width:100%;
+    max-width:100%;
+  }
+
+  table{
+    font-size:14px;
+  }
 }
 
 </style>
@@ -142,62 +204,178 @@ th { background: #ccc; }
 
 <div class="container" id="reporte">
 
-<div class="header">
+  <div class="header">
 
-<div class="info">
-  <div><b>Descripción producto:</b> <span id="producto">---</span></div>
-  <div><b>Cantidad planificada:</b> <span id="cantidad">---</span></div>
+    <div class="info">
+
+      <div>
+        <b>Descripción producto:</b>
+        <span id="producto">---</span>
+      </div>
+
+      <div>
+        <b>Cantidad planificada:</b>
+        <span id="cantidad">---</span>
+      </div>
+
+    </div>
+
+    <div id="logoContainer">
+      <img src="logo.jpg" alt="Logo">
+    </div>
+
+    <div class="panel">
+
+      <label>
+        <b>Lote:</b>
+      </label>
+
+      <input 
+        type="text" 
+        id="loteInput" 
+        placeholder="Ej: L001"
+      >
+
+      <button id="btnEnviar">
+        📤 Cargar Datos
+      </button>
+
+      <button id="btnReporte">
+        📄 Descargar Reporte
+      </button>
+
+      <!-- 🔥 SCANNER -->
+      <input
+        type="text"
+        id="scannerInput"
+        autocomplete="off"
+      >
+
+      <div id="timer"></div>
+
+    </div>
+
+  </div>
+
+  <table>
+
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Kardex</th>
+        <th>Descripción</th>
+        <th>Cantidad Requerida</th>
+        <th>Cantidad Consumida</th>
+        <th>Unidad</th>
+        <th>✔</th>
+      </tr>
+    </thead>
+
+    <tbody id="tablaComponentes">
+    </tbody>
+
+  </table>
+
 </div>
-
-<div id="logoContainer">
-  <img src="logo.jpg" alt="Logo">
-</div>
-
-<div class="panel">
-  <label><b>Lote:</b></label>
-  <input type="text" id="loteInput" placeholder="Ej: L001">
-
-  <button id="btnEnviar">📤 Cargar Datos</button>
-  <button id="btnValidar">✅ Validar Peso</button>
-  <button id="btnReporte">📄 Descargar Reporte</button>
-
-  <div id="timer"></div>
-</div>
-
-</div>
-
-<table>
-<thead>
-<tr>
-  <th>#</th>
-  <th>Kardex</th>
-  <th>Descripción</th>
-  <th>Cantidad</th>
-  <th>Unidad</th>
-  <th>✔</th>
-</tr>
-</thead>
-<tbody id="tablaComponentes"></tbody>
-</table>
-
-</div>
-
 <script>
 
 const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
 
-const topicRequest = "dariza/lote/request";
+const topicRequest  = "dariza/lote/request";
 const topicResponse = "dariza/lote/response";
-const topicBarcode = "dariza/barcode/response";
-const topicPeso = "dariza/peso/web";
-const topicValidar = "dariza/validacion/request";
+const topicBarcode  = "dariza/barcode/response";
+const topicPeso     = "dariza/peso/web";
+const topicValidar  = "dariza/validacion/request";
+
+const topicBarcodeWeb = "dariza/barcode/web";
 
 let articuloActual = null;
-let pesoKG = 0;
-let pesoG = 0;
 
+let pesoKG = 0;
+let pesoG  = 0;
+
+// ======================================
+// 🔥 SCANNER USB
+// ======================================
+
+const scannerInput =
+  document.getElementById("scannerInput");
+
+// ======================================
+// 🔥 VALIDAR SI EXISTE
+// ======================================
+
+if (scannerInput) {
+
+  // 🔥 foco inicial SIN SCROLL
+  setTimeout(() => {
+
+    scannerInput.focus({
+      preventScroll: true
+    });
+
+  }, 100);
+
+  // ======================================
+  // 🔥 RECUPERAR FOCO
+  // ======================================
+
+  document.addEventListener("click", (e) => {
+
+    const id = e.target.id;
+
+    // permitir escribir
+    if (
+      id === "loteInput" ||
+      id === "scannerInput"
+    ) {
+      return;
+    }
+
+    scannerInput.focus({
+      preventScroll: true
+    });
+
+  });
+
+  // ======================================
+  // 🔥 LEER SCANNER
+  // ======================================
+
+  scannerInput.addEventListener("keydown", (e) => {
+
+    if (e.key === "Enter") {
+
+      e.preventDefault();
+
+      const barcode =
+        scannerInput.value.trim();
+
+      scannerInput.value = "";
+
+      if (!barcode) return;
+
+      console.log(
+        "📦 Barcode escaneado:",
+        barcode
+      );
+
+      client.publish(
+        topicBarcodeWeb,
+        JSON.stringify({
+          barcode: barcode
+        })
+      );
+    }
+  });
+}
+
+// ======================================
 // 🔥 FORMATEAR FECHA
+// ======================================
+
 function formatearFecha(fechaISO) {
+
   if (!fechaISO) return "---";
 
   const d = new Date(fechaISO);
@@ -210,173 +388,415 @@ function formatearFecha(fechaISO) {
     String(d.getSeconds()).padStart(2,'0');
 }
 
+// ======================================
 // 🔥 DIVIDIR TEXTO
+// ======================================
+
 function dividirTexto(texto, ancho) {
+
   texto = texto || "";
+
   return [
     texto.substring(0, ancho),
-    texto.length > ancho ? texto.substring(ancho, ancho * 2) : ""
+    texto.length > ancho
+      ? texto.substring(ancho, ancho * 2)
+      : ""
   ];
 }
 
+// ======================================
+// 🔥 MQTT CONNECT
+// ======================================
+
 client.on("connect", () => {
+
+  console.log("✅ MQTT conectado");
+
   client.subscribe(topicResponse);
   client.subscribe(topicBarcode);
   client.subscribe(topicPeso);
 });
 
+// ======================================
+// 🔥 MENSAJES
+// ======================================
+
 function mostrarMensaje(texto, color="red") {
-  const msg = document.getElementById("mensaje");
+
+  const msg =
+    document.getElementById("mensaje");
+
   msg.innerText = texto;
   msg.style.background = color;
   msg.style.display = "block";
-  setTimeout(() => msg.style.display = "none", 2000);
+
+  setTimeout(() => {
+
+    msg.style.display = "none";
+
+  }, 2000);
 }
 
+// ======================================
+// 🔥 CARGAR LOTE
+// ======================================
+
 btnEnviar.onclick = () => {
-  const lote = document.getElementById("loteInput").value.trim().toUpperCase();
+
+  const lote = document
+    .getElementById("loteInput")
+    .value
+    .trim()
+    .toUpperCase();
 
   if (!lote) {
-    mostrarMensaje("⚠️ Ingresa un lote", "orange");
+
+    mostrarMensaje(
+      "⚠️ Ingresa un lote",
+      "orange"
+    );
+
     return;
   }
 
-  client.publish(topicRequest, JSON.stringify({ lote }));
+  client.publish(
+    topicRequest,
+    JSON.stringify({ lote })
+  );
+
+  // 🔥 volver foco SIN SCROLL
+  if (scannerInput) {
+
+    scannerInput.focus({
+      preventScroll: true
+    });
+  }
 };
+
+// ======================================
+// 🔥 MQTT MESSAGE
+// ======================================
 
 client.on("message", (topic, message) => {
 
-  const data = JSON.parse(message.toString());
+  let data;
+
+  try {
+
+    data = JSON.parse(
+      message.toString()
+    );
+
+  } catch (err) {
+
+    console.error(
+      "❌ JSON inválido:",
+      err
+    );
+
+    return;
+  }
+
+  // ======================================
+  // 🔥 RESPONSE LOTE
+  // ======================================
 
   if (topic === topicResponse) {
 
     if (data.status === "error") {
-      mostrarMensaje("❌ " + data.mensaje);
+
+      mostrarMensaje(
+        "❌ " + data.mensaje
+      );
 
       producto.innerText = "---";
       cantidad.innerText = "---";
+
       tablaComponentes.innerHTML = "";
 
       return;
     }
 
-    producto.innerText = data.lote.producto;
-    cantidad.innerText = data.lote.cantidad_planificada + " kg";
+    producto.innerText =
+      data.lote?.producto || "---";
+
+    cantidad.innerText =
+      (data.lote?.cantidad_planificada || 0)
+      + " kg";
 
     tablaComponentes.innerHTML = "";
 
+    if (!Array.isArray(data.componentes)) {
+      return;
+    }
+
+    let html = "";
+
     data.componentes.forEach((c, i) => {
 
-      const yaValidado = c.validado == 1;
+      const yaValidado =
+        c.validado == 1;
 
-      tablaComponentes.innerHTML += `
-        <tr data-kardex="${c.kardex}" 
-            data-validado="${c.validado}" 
-            data-fecha="${c.fecha_validacion ? formatearFecha(c.fecha_validacion) : ''}">
+      html += `
+
+        <tr 
+          data-kardex="${c.kardex || ''}"
+          data-validado="${c.validado || 0}"
+          data-fecha="${c.fecha_validacion ? formatearFecha(c.fecha_validacion) : ''}"
+        >
+
           <td>${i+1}</td>
-          <td>${c.kardex}</td>
-          <td>${c.descripcion}</td>
-          <td>${c.cantidad_requerida}</td>
-          <td>${c.unidad}</td>
-          <td>${yaValidado ? "✅" : "❌"}</td>
-        </tr>`;
+
+          <td>${c.kardex || ''}</td>
+
+          <td>${c.descripcion || ''}</td>
+
+          <td>${c.cantidad_requerida || 0}</td>
+
+          <td>${c.peso_leido ?? "-"}</td>
+
+          <td>${c.unidad || ''}</td>
+
+          <td>
+
+            <button
+              class="btnFila ${yaValidado ? 'btnOk' : 'btnPendiente'}"
+              ${yaValidado ? 'disabled' : ''}
+              onclick="validarFila(this)"
+            >
+              ${yaValidado ? '✅' : '❌'}
+            </button>
+
+          </td>
+
+        </tr>
+      `;
     });
 
-    btnValidar.disabled = true;
+    tablaComponentes.innerHTML = html;
   }
+
+  // ======================================
+  // 🔥 BARCODE RESPONSE
+  // ======================================
 
   if (topic === topicBarcode) {
 
-    if (data.kardex === "0") return;
+    if (!data.kardex) return;
 
-    const filas = document.querySelectorAll("#tablaComponentes tr");
+    const filas = document.querySelectorAll(
+      "#tablaComponentes tr"
+    );
 
-    filas.forEach(f => f.classList.remove("ok", "error"));
+    filas.forEach(f => {
+
+      f.classList.remove("ok");
+      f.classList.remove("error");
+      f.classList.remove("selected");
+    });
 
     let encontrado = false;
 
     filas.forEach(fila => {
-      if (fila.dataset.kardex === data.kardex) {
+
+      if (
+        fila.dataset.kardex ===
+        data.kardex
+      ) {
+
         encontrado = true;
 
-        if (fila.dataset.validado == "1") {
-          mostrarMensaje("⚠️ Ya validado", "orange");
-          btnValidar.disabled = true;
+        if (
+          fila.dataset.validado == "1"
+        ) {
+
+          mostrarMensaje(
+            "⚠️ Ya validado",
+            "orange"
+          );
+
           return;
         }
 
         if (data.status === "ok") {
+
           fila.classList.add("ok");
-          articuloActual = data.kardex;
-          btnValidar.disabled = false;
+        
+
+          articuloActual =
+            data.kardex;
+
+          mostrarMensaje(
+            "✔ Artículo seleccionado",
+            "green"
+          );
+
         } else {
+
           fila.classList.add("error");
-          btnValidar.disabled = true;
+
+          articuloActual = null;
         }
       }
     });
 
     if (!encontrado) {
-      mostrarMensaje("❌ Artículo no encontrado");
+
+      mostrarMensaje(
+        "❌ Artículo no encontrado"
+      );
+
+      articuloActual = null;
     }
   }
 
-  if (topic === topicPeso) {
-    pesoKG = data.kg;
-    pesoG = data.g;
-  }
+  // ======================================
+  // 🔥 PESO
+  // ======================================
 
+  if (topic === topicPeso) {
+
+    pesoKG =
+      parseFloat(data.kg) || 0;
+
+    pesoG =
+      parseFloat(data.g) || 0;
+  }
 });
 
-btnValidar.onclick = () => {
+// ======================================
+// 🔥 VALIDAR FILA
+// ======================================
+
+function validarFila(btn) {
+
+  const fila = btn.closest("tr");
+
+  if (!fila) return;
+
+  if (fila.dataset.validado == "1") {
+
+    mostrarMensaje(
+      "⚠️ Ya validado",
+      "orange"
+    );
+
+    return;
+  }
 
   if (!articuloActual) {
-    mostrarMensaje("⚠️ Escanea primero", "orange");
+
+    mostrarMensaje(
+      "⚠️ Selecciona artículo",
+      "orange"
+    );
+
+    return;
+  }
+
+  if (
+    fila.dataset.kardex !==
+    articuloActual
+  ) {
+
+    mostrarMensaje(
+      "⚠️ Artículo no seleccionado",
+      "orange"
+    );
+
     return;
   }
 
   let t = 3;
 
-  timer.innerText = `⏳ Validando en ${t}...`;
+  timer.innerText =
+    `⏳ Validando en ${t}...`;
 
   const intervalo = setInterval(() => {
+
     t--;
-    timer.innerText = `⏳ Validando en ${t}...`;
+
+    timer.innerText =
+      `⏳ Validando en ${t}...`;
 
     if (t <= 0) {
+
       clearInterval(intervalo);
+
       timer.innerText = "";
-      validarPeso();
+
+      validarPeso(fila, btn);
     }
 
   }, 1000);
-};
+}
 
-function validarPeso() {
+function validarPeso(fila, btn) {
 
-  const fila = document.querySelector(`tr[data-kardex="${articuloActual}"]`);
   if (!fila) return;
 
-  const cantidad = parseFloat(fila.children[3].innerText);
-  const unidad = fila.children[4].innerText;
+  // 🔥 COLUMNA CANTIDAD REQUERIDA
+  const cantidad =
+    parseFloat(
+      fila.children[3].innerText
+    ) || 0;
 
-  let peso = (unidad === "kg") ? pesoKG : pesoG;
+  // 🔥 COLUMNA UNIDAD
+  const unidad =
+    fila.children[5].innerText.trim();
 
+  // 🔥 LEER PESO
+  let peso =
+    (unidad === "kg")
+      ? pesoKG
+      : pesoG;
+
+  // 🔥 TOLERANCIA
   let tolerancia = 1;
 
   if (unidad === "kg") {
+
     tolerancia = 0.11;
+
   } else if (unidad === "g") {
+
     tolerancia = 1;
   }
 
-  if (Math.abs(peso - cantidad) <= tolerancia) {
+  // ======================================
+  // 🔥 VALIDACIÓN OK
+  // ======================================
+
+  if (
+    Math.abs(peso - cantidad)
+    <= tolerancia
+  ) {
 
     fila.classList.remove("ok");
-    fila.children[5].innerText = "✅";
+
+    // 🔥 COLUMNA PESO LEÍDO
+    fila.children[4].innerText =
+      peso;
+
+    // 🔥 BOTÓN
+    btn.innerText = "✅";
+
+    btn.classList.remove(
+      "btnPendiente"
+    );
+
+    btn.classList.add("btnOk");
+
+    btn.disabled = true;
+
     fila.dataset.validado = "1";
 
+    // ======================================
+    // 🔥 FECHA
+    // ======================================
+
     const now = new Date();
+
     const fecha =
       now.getFullYear() + "-" +
       String(now.getMonth()+1).padStart(2,'0') + "-" +
@@ -387,38 +807,86 @@ function validarPeso() {
 
     fila.dataset.fecha = fecha;
 
-    const lote = document.getElementById("loteInput").value.trim().toUpperCase();
+    // ======================================
+    // 🔥 LOTE
+    // ======================================
 
-    client.publish(topicValidar, JSON.stringify({
-      lote: lote,
-      kardex: articuloActual,
-      fecha_validacion: fecha
-    }));
-    // 🔥 ENVÍO A IMPRESORA (SOLO SI VALIDÓ OK)
-    client.publish("dariza/print", JSON.stringify({
-      lote: lote,
-      producto: producto.innerText,
-      cantidad_planificada: cantidad.innerText,
-      kardex: articuloActual,
-      articulo: fila.children[2].innerText,
-      cantidad: fila.children[3].innerText + " " + fila.children[4].innerText,
-      peso: peso + " " + fila.children[4].innerText,
-      fecha: fecha
-    }));
-    mostrarMensaje("✔ Validado", "green");
+    const lote = document
+      .getElementById("loteInput")
+      .value
+      .trim()
+      .toUpperCase();
+
+    // ======================================
+    // 🔥 GUARDAR DB
+    // ======================================
+
+    client.publish(
+      topicValidar,
+      JSON.stringify({
+        lote: lote,
+        kardex: articuloActual,
+        fecha_validacion: fecha,
+        peso_leido: peso
+      })
+    );
+
+    // ======================================
+    // 🔥 IMPRIMIR
+    // ======================================
+
+    client.publish(
+      "dariza/print",
+      JSON.stringify({
+
+        lote: lote,
+
+        producto:
+          producto.innerText,
+
+        cantidad_planificada:
+          cantidad.innerText,
+
+        kardex:
+          articuloActual,
+
+        articulo:
+          fila.children[2].innerText,
+
+        cantidad:
+          fila.children[3].innerText
+          + " " +
+          fila.children[5].innerText,
+
+        peso:
+          peso + " " +
+          fila.children[5].innerText,
+
+        fecha: fecha
+      })
+    );
+
+    mostrarMensaje(
+      "✔ Validado",
+      "green"
+    );
 
     articuloActual = null;
-    btnValidar.disabled = true;
 
   } else {
-    mostrarMensaje(`❌ Peso incorrecto (${peso})`);
+
+    // 🔥 ESTE ERA EL QUE TE FALTABA
+    mostrarMensaje(
+      `❌ Peso incorrecto (${peso})`,
+      "red"
+    );
   }
 }
-
 // 🔥 REPORTE
 document.getElementById("btnReporte").onclick = () => {
 
   const lote = document.getElementById("loteInput").value.trim().toUpperCase();
+
   const filas = document.querySelectorAll("#tablaComponentes tr");
 
   if (!lote) {
@@ -431,23 +899,42 @@ document.getElementById("btnReporte").onclick = () => {
     return;
   }
 
-  const pad = (txt, n) => String(txt).padEnd(n, " ");
+  const pad = (txt, n) =>
+    String(txt || "").padEnd(n, " ");
 
-  const W = { num:4, kardex:12, desc:25, cant:15, estado:10, fecha:16 };
+  // 🔥 SOLO CENTRAR ESTADO
+  const center = (txt, n) => {
+    txt = String(txt || "");
+    const spaces = n - txt.length;
+    const left = Math.floor(spaces / 2);
+    const right = spaces - left;
+    return " ".repeat(left) + txt + " ".repeat(right);
+  };
+
+  // 🔥 ESTOS YA ESTABAN BIEN
+  const W = {
+    num: 4,
+    kardex: 12,
+    desc: 24,
+    req: 12,
+    cons: 14,
+    estado: 8,
+    fecha: 20
+  };
 
   let contenido = `
 DARYZA S.A.
 ORDEN DE FABRICACIÓN
-----------------------------------------
+------------------------------------------------------------
 
 Lote: ${lote}
 Producto: ${producto.innerText}
 Cantidad Planificada: ${cantidad.innerText}
 Fecha y Hora: ${new Date().toLocaleString()}
 
-----------------------------------------
+------------------------------------------------------------
 
-${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Cantidad",W.cant)}${pad("Estado",W.estado)}${pad("Fecha y Hora",W.fecha)}
+${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Req.",W.req)}${pad("Consumido",W.cons)}${center("Estado",W.estado)}${pad("   Fecha",W.fecha)}
 
 `;
 
@@ -455,86 +942,130 @@ ${pad("#",W.num)}${pad("Kardex",W.kardex)}${pad("Descripción",W.desc)}${pad("Ca
 
   filas.forEach((f, i) => {
 
-    const estado = f.children[5].innerText;
-    if (estado === "❌") completo = false;
+    const estado =
+      f.children[6].innerText.trim();
 
-    const fecha = f.dataset.fecha ? formatearFecha(f.dataset.fecha) : "---";
+    if (estado === "❌") {
+      completo = false;
+    }
+
+    const fecha =
+      f.dataset.fecha
+        ? formatearFecha(f.dataset.fecha)
+        : "---";
 
     let fecha1 = "---";
     let fecha2 = "";
 
     if (fecha !== "---") {
       const partes = fecha.split(" ");
-      fecha1 = partes[0];
+      fecha1 = partes[0] || "---";
       fecha2 = partes[1] || "";
     }
-
-    const [desc1, desc2] = dividirTexto(f.children[2].innerText, W.desc);
-
+    // 🔥 DESCRIPCIÓN EN 2 LÍNEAS
+    const [desc1, desc2] =
+      dividirTexto(
+        f.children[2].innerText,
+        22
+      );
+    const requerido =
+      f.children[3].innerText;
+    const consumido =
+      (
+        f.children[4].innerText +
+        " " +
+        f.children[5].innerText
+      ).trim();
+    // ======================================
+    // 🔥 PRIMERA LÍNEA
+    // ======================================
     contenido +=
-      pad(i+1, W.num) +
+      pad(i + 1, W.num) +
       pad(f.children[1].innerText, W.kardex) +
       pad(desc1, W.desc) +
-      pad(f.children[3].innerText + " " + f.children[4].innerText, W.cant) +
-      pad(estado, W.estado) +
+      pad(requerido, W.req) +
+      pad(consumido, W.cons) +
+      center(estado, W.estado) +
       pad(fecha1, W.fecha) +
       "\n";
-
+    // ======================================
+    // 🔥 SEGUNDA LÍNEA
+    // ======================================
     contenido +=
       pad("", W.num) +
       pad("", W.kardex) +
       pad(desc2, W.desc) +
-      pad("", W.cant) +
+      pad("", W.req) +
+      pad("", W.cons) +
       pad("", W.estado) +
-      (fecha2 ? fecha2.padEnd(W.fecha, " ") : "".padEnd(W.fecha, " ")) +
+      pad(fecha2, W.fecha) +
       "\n";
   });
+  contenido += `
+------------------------------------------------------------
 
-  contenido += `\n----------------------------------------\n`;
-  contenido += `Estado del lote: ${completo ? "✔ COMPLETO" : "❌ INCOMPLETO"}\n\n\n`;
+Estado del lote:
 
-  contenido += `Operario: ____________________________\n\n`;
-  contenido += `Firma:    ____________________________\n`;
+${completo ? "✔ COMPLETO" : "❌ INCOMPLETO"}
 
-  const temp = document.createElement("div");
 
-  temp.style.padding = "30px"; // 🔥 antes 40px
-  temp.style.fontSize = "14px";
-  temp.style.fontFamily = "Courier New, monospace";
-  temp.style.whiteSpace = "pre";
-  temp.style.lineHeight = "1.8";
+Operario: ____________________________
 
+Firma:    ____________________________
+`;
+
+  // ======================================
+  // 🔥 DIV TEMPORAL
+  // ======================================
+  const temp =
+    document.createElement("div");
+  temp.style.padding = "30px";
+  temp.style.fontSize = "13px";
+  temp.style.fontFamily =
+    "Courier New, monospace";
+  // 🔥 ESTE ERA TU FIX IMPORTANTE
+  temp.style.whiteSpace = "pre-wrap";
+  temp.style.lineHeight = "1.7";
   temp.innerText = contenido;
-
+  // ======================================
+  // 🔥 PDF
+  // ======================================
   html2pdf().set({
-    margin: 0.3, // 🔥 antes 0.5
-    filename: `reporte_${lote}.pdf`,
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-  }).from(temp).outputPdf('blob').then(blob => {
-  const url = URL.createObjectURL(blob);
-
-  // Intentar abrir
-  window.open(url);
-
-  // Y forzar descarga también
-  const a = document.createElement("a");
-  a.href = url;
-  const now = new Date();
-
-  const fechaNombre =
-    now.getFullYear() + "-" +
-    String(now.getMonth()+1).padStart(2,'0') + "-" +
-    String(now.getDate()).padStart(2,'0') + "_" +
-    String(now.getHours()).padStart(2,'0') + "-" +
-    String(now.getMinutes()).padStart(2,'0') + "-" +
-    String(now.getSeconds()).padStart(2,'0');
-
-  a.download = `Reporte_${lote}_${fechaNombre}.pdf`;
-  a.click();
-  });
+    margin: 0.3,
+    filename:
+      `reporte_${lote}.pdf`,
+    html2canvas: {
+      scale: 2
+    },
+    jsPDF: {
+      unit: "in",
+      format: "a4",
+      orientation: "portrait"
+    }
+  }).from(temp)
+    .outputPdf("blob")
+    .then(blob => {
+      const url =
+        URL.createObjectURL(blob);
+      // 🔥 ABRIR
+      window.open(url);
+      // 🔥 DESCARGAR
+      const a =
+        document.createElement("a");
+      a.href = url;
+      const now = new Date();
+      const fechaNombre =
+        now.getFullYear() + "-" +
+        String(now.getMonth()+1).padStart(2,'0') + "-" +
+        String(now.getDate()).padStart(2,'0') + "_" +
+        String(now.getHours()).padStart(2,'0') + "-" +
+        String(now.getMinutes()).padStart(2,'0') + "-" +
+        String(now.getSeconds()).padStart(2,'0');
+      a.download =
+        `Reporte_${lote}_${fechaNombre}.pdf`;
+      a.click();
+    });
 };
-
 </script>
 </body>
 </html>
