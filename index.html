@@ -178,23 +178,45 @@ th{
   opacity:0;
 }
 
-/* 🔥 RESPONSIVE */
 @media screen and (max-width:1000px){
+
+  .header{
+    grid-template-columns:1fr auto 1fr;
+    gap:10px;
+  }
+
+  .panel{
+    width:100%;
+    max-width:220px;
+  }
+
+  #logoContainer img{
+    width:180px;
+  }
+
+  table{
+    font-size:12px;
+  }
+}
+
+@media screen and (max-width:700px){
 
   .header{
     grid-template-columns:1fr;
   }
 
+  .info,
+  #logoContainer,
   .panel{
+    justify-self:center;
     width:100%;
-    max-width:100%;
+    max-width:320px;
   }
 
-  table{
-    font-size:14px;
+  #logoContainer img{
+    width:180px;
   }
 }
-
 </style>
 </head>
 
@@ -230,11 +252,17 @@ th{
         <b>Lote:</b>
       </label>
 
-      <input 
-        type="text" 
-        id="loteInput" 
-        placeholder="Ej: L001"
-      >
+    <input 
+      type="search"
+      inputmode="text"
+      enterkeyhint="done"
+      autocapitalize="characters"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+      id="loteInput" 
+      placeholder="Ej: L001"
+    >
 
       <button id="btnEnviar">
         📤 Cargar Datos
