@@ -66,7 +66,42 @@ button{
   width:100%;
   padding:6px;
   margin-top:20px;
-  font-size:16px;
+}
+/* ====================================== */
+/* 🔥 FIX NO ZOOM LOTEINPUT */
+/* ====================================== */
+
+#loteInput{
+
+  /* 🔥 tamaño visual */
+  width:200%;
+
+  /* 🔥 tamaño REAL grande */
+  font-size:32px;
+
+  padding:12px;
+
+  border:1px solid #999;
+  border-radius:6px;
+
+  outline:none;
+
+  appearance:none;
+  -webkit-appearance:none;
+
+  transform-origin:left top;
+
+  /* 🔥 reduce visualmente */
+  transform:scale(0.5);
+
+  margin-bottom:-35px;
+  margin-right:-100%;
+
+}
+
+/* 🔥 contenedor */
+.panel{
+  overflow:hidden;
 }
 button{
   background:#22c55e;
@@ -268,7 +303,7 @@ th{
       </label>
 
     <input 
-      type="search"
+      type="text"
       inputmode="text"
       enterkeyhint="done"
       autocapitalize="characters"
