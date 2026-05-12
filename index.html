@@ -234,20 +234,64 @@ th{
 
 @media screen and (max-width:700px){
 
+  /* 🔥 MANTENER 3 COLUMNAS */
   .header{
-    grid-template-columns:1fr;
+    grid-template-columns:1fr auto 1fr;
+    gap:8px;
+    align-items:start;
   }
 
-  .info,
-  #logoContainer,
-  .panel{
-    justify-self:center;
+  /* 🔥 TEXTO IZQUIERDA */
+  .info{
     width:100%;
-    max-width:320px;
+    justify-self:start;
+    font-size:12px;
+  }
+
+  .info div{
+    margin:3px 0;
+  }
+
+  /* 🔥 LOGO */
+  #logoContainer{
+    align-self:center;
   }
 
   #logoContainer img{
-    width:180px;
+    width:120px;
+  }
+
+  /* 🔥 PANEL DERECHA */
+  .panel{
+    width:100%;
+    max-width:170px;
+
+    padding:8px;
+  }
+
+  /* 🔥 INPUT Y BOTONES */
+  #loteInput,
+  button{
+    margin-top:10px;
+    padding:10px;
+    font-size:16px;
+  }
+
+  /* 🔥 TABLA */
+  table{
+    font-size:10px;
+  }
+
+  th,
+  td{
+    padding:3px;
+  }
+
+  /* 🔥 BOTONES VALIDAR */
+  .btnFila{
+    width:28px;
+    height:28px;
+    font-size:14px;
   }
 }
 </style>
