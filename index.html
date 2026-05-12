@@ -232,39 +232,6 @@ th{
     width:180px;
   }
 }
-/* 🔥 CONTENEDOR */
-.inputWrap{
-
-  width:300px;
-  height:50px;
-
-  overflow:hidden;
-
-  margin-top:20px;
-}
-
-/* 🔥 TRUCO REAL */
-#loteInput{
-
-  width:400px;
-
-  font-size:32px;
-
-  padding:10px;
-
-  border:2px solid #999;
-  border-radius:8px;
-
-  outline:none;
-
-  appearance:none;
-  -webkit-appearance:none;
-
-  transform-origin:left top;
-
-  transform:scale(0.5);
-
-}
 </style>
 </head>
 
@@ -300,20 +267,17 @@ th{
         <b>Lote:</b>
       </label>
 
-    <div class="inputWrap">
-
-      <input 
-        id="loteInput"
-        type="search"
-        inputmode="text"
-        enterkeyhint="done"
-        placeholder="Ej: L001"
-        autocomplete="off"
-        autocorrect="off"
-        autocapitalize="characters"
-        spellcheck="false"
-      >
-    </div>
+    <input 
+      type="search"
+      inputmode="text"
+      enterkeyhint="done"
+      autocapitalize="characters"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+      id="loteInput" 
+      placeholder="Ej: L001"
+    >
 
       <button id="btnEnviar">
         📤 Cargar Datos
